@@ -37,6 +37,13 @@ define setup_env
 	$(eval COMPOSE_FILE_ARGS += $(if $(POSTGRES_DOCKER),--profile postgres,))
 endef
 
+# Function to open psql shell
+define psql_shell
+	@docker compose exec postgres \
+	psql -U $(call parse_env_value,POSTGRES_USER) \
+	-d $(call parse_env_value,POSTGRES_DB)
+endef
+
 PROD:
 	$(call setup_env,prod.env,-f docker-compose.yml)
 
@@ -114,9 +121,12 @@ e2e-run-all: ## Run E2E tests: all
 e2e-run-interactive: ## Run E2E tests: interactively
 	$(E2E_RUN) npx cypress open
 
-psql-shell: ## Assuming a system is already running with `make start`, start up an interactive psql shell
-	docker-compose exec postgres psql --username postgres --dbname polis-dev
-
+psql-shell: ## Open psql shell for the default environment
+		@if [ "${POSTGRES_DOCKER}" != "true" ]; then \
+				echo "PostgreSQL is not running in Docker. Exiting."; \
+				exit 1; \
+		fi
+		$(call psql_shell)
 
 # Helpful CLI shortcuts
 rbs: start-rebuild
