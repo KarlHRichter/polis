@@ -38,6 +38,8 @@ services:
       target: prod
       args:
         NODE_ENV: production
+    labels:
+      polis_tag: ${TAG:-dev}
     depends_on:
       - "file-server"
     networks:
@@ -50,6 +52,8 @@ services:
     image: 050917022930.dkr.ecr.us-east-1.amazonaws.com/polis/math:latest
     build:
       context: ./math
+    labels:
+      polis_tag: ${TAG:-dev}
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - LOGGING_LEVEL=${MATH_LOG_LEVEL:-warn}
@@ -60,13 +64,12 @@ services:
       - "polis-net"
 
   postgres:
-    image: docker.io/compdem/polis-postgres:${TAG:-dev}
     restart: always
     build:
       context: ./server
-      dockerfile: Dockerfile-db
-      labels:
-        polis_tag: ${TAG:-dev}
+      dockerfile: Dockerfile-pdb
+    labels:
+      polis_tag: ${TAG:-dev}
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -74,8 +77,8 @@ services:
     networks:
       - "polis-net"
     volumes:
-      - "backups:/backups"
-      - "postgres:/var/lib/postgresql/data"
+      - prodclone_data:/var/lib/postgresql/data
+      - ./server/prodclone.dump:/docker-entrypoint-initdb.d/prodclone.dump
     profiles:
       - postgres
 
@@ -84,8 +87,8 @@ services:
     build:
       context: ./file-server
       dockerfile: nginx.Dockerfile
-      labels:
-        polis_tag: ${TAG:-dev}
+    labels:
+      polis_tag: ${TAG:-dev}
     environment:
       - API_SERVER_PORT=${API_SERVER_PORT:-5000}
     depends_on:
@@ -101,12 +104,12 @@ services:
     build:
       context: ./
       dockerfile: file-server/Dockerfile
-      labels:
-        polis_tag: ${TAG:-dev}
       args:
         GA_TRACKING_ID: ${GA_TRACKING_ID}
         GIT_HASH: "${GIT_HASH:-placeholder}"
         NODE_ENV: production
+    labels:
+      polis_tag: ${TAG:-dev}
     environment:
       - PORT=${STATIC_FILES_PORT:-8080}
     networks:
@@ -128,14 +131,11 @@ networks:
   polis-net:
     name: polis-net-${TAG:-dev}
     external: true
-
-
-
-volumes:
-  backups:
     labels:
       polis_tag: ${TAG:-dev}
-  postgres:
+
+volumes:
+  prodclone_data:
     labels:
       polis_tag: ${TAG:-dev}
   server-logs:

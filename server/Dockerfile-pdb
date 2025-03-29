@@ -1,0 +1,6 @@
+FROM docker.io/postgis/postgis:16-3.4
+# FROM postgres:16-alpine
+
+# COPY prodclone.dump /docker-entrypoint-initdb.d/prodclone.dump
+COPY init-db.sh /docker-entrypoint-initdb.d/init-db.sh
+RUN chmod +x /docker-entrypoint-initdb.d/init-db.sh
