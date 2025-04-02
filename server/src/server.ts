@@ -4571,7 +4571,7 @@ Email verified! You can close this tab or hit the back button.
         return;
       }
 
-      if (finalPid && finalPid < 0) {
+      if (finalPid && typeof finalPid === 'number' && finalPid < 0) {
         fail(res, 500, "polis_err_post_comment_bad_pid");
         return;
       }

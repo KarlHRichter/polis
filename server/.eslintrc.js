@@ -7,9 +7,10 @@ module.exports = {
   extends: ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
   overrides: [
     {
-      files: ["bin/*.js"],
+      files: ["bin/*.js", "__tests__/**/*.ts"],
       rules: {
         "no-console": "off",
+        "no-restricted-properties": "off"
       }
     }
   ],
@@ -48,5 +49,5 @@ module.exports = {
     "prefer-rest-params": 1,
     "prefer-spread": 1
   },
-  ignorePatterns: ["dist"]
+  ignorePatterns: ["coverage", "dist"]
 };
